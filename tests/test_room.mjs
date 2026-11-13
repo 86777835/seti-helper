@@ -36,6 +36,7 @@ await A.fill('[data-name="0"]', '小林'); await B.fill('[data-name="1"]', '阿�
 eq('B sees name', await B.inputValue('[data-name="0"]'), '小林');
 await B.click('[data-act="color"][data-i="2"][data-col="white"]'); await wait(300);
 eq('A sees seat 3 turned white', await A.getAttribute('[data-k="seat-2"] .por', 'data-c'), 'white');
+eq('seat avatars load', await A.$$eval('[data-k^="seat-"] .por img', l => l.map(i => [i.getAttribute('src'), i.complete && i.naturalWidth > 0])), [['img/green.jpg', true], ['img/purple.jpg', true], ['img/white.jpg', true]]);
 await A.click('[data-act="first"][data-id="purple"]'); await wait(300);
 eq('order link', (await A.$('[data-act="order"]')) !== null, true);
 for (const [k, f] of [['tech', 'a'], ['mission', 'b'], ['income', 'a'], ['other', 'b']]) { await A.click(`[data-act="gold"][data-tile="${k}"][data-face="${f}"]`); await wait(150); }
@@ -55,7 +56,7 @@ await B.click('[data-act="begin"]'); await A.waitForSelector('.tabs');
 eq('track order starts with 阿哲', await A.$$eval('.slot .n', s => s.map(x => x.textContent)), ['阿哲', '白色玩家', '小林']);
 eq('first pass note before anyone passes', (await A.textContent('[data-k="ph-act"]')).includes('本轮第一个跳过'), true);
 await A.click('[data-act="rot"]'); await A.waitForSelector('.rot img');
-eq('rotation picture loads', await A.$eval('.rot img', i => i.complete && i.naturalWidth > 0), true);
+eq('rotation picture is the 4-step strip and loads', await A.$eval('.rot img', i => [i.getAttribute('src'), i.complete && i.naturalWidth > 0, i.naturalWidth > i.naturalHeight * 3]), ['img/teach/rotsteps.webp', true, true]);
 await shot(A, '03_flow', true);
 await B.click('[data-act="pass"][data-id="white"]'); await wait(400);
 eq('A sees who passed first', (await A.textContent('.firstp')).includes('白色玩家'), true);

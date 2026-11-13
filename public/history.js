@@ -7,7 +7,7 @@ const CATS = [
 ];
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const pname = p => p.name || `${COLOR_ZH[p.id]}玩家`;
-const por = (p, cls) => `<span class="por ${cls}" style="--c:${COLORS[p.id]}" data-c="${p.id}"><b>${esc(pname(p)[0])}</b></span>`;
+const por = (p, cls) => `<span class="por ${cls}" style="--c:${COLORS[p.id]}" data-c="${p.id}"><img src="img/${p.id}.jpg" alt=""></span>`;
 const when = t => new Date(t).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
 
 function game(g) {

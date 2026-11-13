@@ -108,7 +108,7 @@ const flushAll = () => [...pending.values()].forEach(p => p.flush());
 /* ---------- helpers ---------- */
 const P = id => S.players.find(p => p.id === id);
 const pname = id => id === RIVAL ? '对手' : P(id).name || `${COLOR_ZH[id]}玩家`;
-const por = (id, cls = '') => `<span class="por ${cls}" style="--c:${COLORS[id]}" data-c="${id}"><b>${id === RIVAL ? '对' : esc((P(id).name || COLOR_ZH[id])[0])}</b></span>`;
+const por = (id, cls = '') => `<span class="por ${cls}" style="--c:${COLORS[id]}" data-c="${id}"><img src="img/${id}.jpg" alt=""></span>`;
 const expName = s => s.org ? '群星计画 · 研究机构' : s.sa ? '含群星计画' : '基础版';
 function toast(t) { const el = $('#toast'); el.innerHTML = `<div class="toast">${esc(t)}</div>`; clearTimeout(toast.t); toast.t = setTimeout(() => el.innerHTML = '', 1800); }
 const src = s => s ? `<i class="src">${esc(s)}</i>` : '';
@@ -163,7 +163,7 @@ function landing() {
   const tag = c => my.includes(c) ? '<em>我的</em>' : '';
   const listed = rooms && rooms.slice().sort((a, b) => my.includes(b.code) - my.includes(a.code));
   const unlisted = rooms ? my.filter(c => !rooms.some(r => r.code === c)) : [];
-  const lp = p => `<span class="por xs" style="--c:${COLORS[p.id]}" data-c="${p.id}"><b>${esc((p.name || COLOR_ZH[p.id])[0])}</b></span>`;
+  const lp = p => `<span class="por xs" style="--c:${COLORS[p.id]}" data-c="${p.id}"><img src="img/${p.id}.jpg" alt=""></span>`;
   const roomList = rooms === null ? '<div class="empty">加载中…</div>' : listed.length + unlisted.length ? listed.map(r => `
       <button class="card lobby" data-act="rejoin" data-code="${r.code}" data-k="lb-${r.code}">
         <span class="lc">${r.code}${tag(r.code)}</span>
@@ -276,7 +276,7 @@ function flowTab() {
   const all = S.passed.length === passers(S).length, last = S.round === LAST_ROUND;
   const first = S.passed[0];
   const passBtns = `<div class="pick passes">${passers(S).map(id => `<button class="${k(id) >= 0 ? 'on' : ''}" data-act="pass" data-id="${id}" ${k(id) >= 0 ? 'disabled' : ''}>${por(id, 'sm')}<span>${esc(pname(id))}${k(id) >= 0 ? ' · 已跳过' : ' 跳过'}</span></button>`).join('')}</div>`;
-  const rotHelp = `<button class="tbh df" data-act="rot"><b>太阳系怎么转</b><span>${ui.rot ? '收起' : '展开'}</span></button>${ui.rot ? `<div class="rot"><img src="img/teach/rotate.webp" alt="太阳系公转示意">${stepList(ROTATE.map(t => ({ t, src: '规 16' })))}</div>` : ''}`;
+  const rotHelp = `<button class="tbh df" data-act="rot"><b>太阳系怎么转</b><span>${ui.rot ? '收起' : '展开'}</span></button>${ui.rot ? `<div class="rot"><img src="img/teach/rotsteps.webp" alt="太阳系公转示意">${stepList(ROTATE.map(t => ({ t, src: '规 16' })))}</div>` : ''}`;
   const firstNote = first ? `<div class="firstp">${por(first, 'xs')}<span><b>${esc(pname(first))}</b> 是本轮第一个跳过的：${first === RIVAL ? '替对手' : ''}转太阳系了吗？${found(S, 'anomalies') ? '转完检查异常点。' : ''}</span></div>` : '';
   return `${track}
     <div class="card ph${all ? ' done' : ' cur'}" data-k="ph-act"><div class="phh"><span class="phn">1</span><b>轮流行动</b><small>${all ? '都跳过了' : '每回合 1 个主要行动 + 任意免费行动'}</small></div>
