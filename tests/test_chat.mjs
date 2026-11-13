@@ -17,7 +17,7 @@ if (mode === '--fake-key') {
   eq('last message must be the user', (await post({ messages: [{ role: 'assistant', content: 'hi' }] })).status, 400);
   eq('system role rejected', (await post({ messages: [{ role: 'system', content: 'x' }, { role: 'user', content: 'hi' }] })).status, 400);
   eq('question over 500 chars rejected', (await post(q('长'.repeat(501)))).status, 400);
-  const r = await post(q('飞机怎么用？'));
+  const r = await post(q('太阳系怎么转？'));
   const j = await r.json();
   console.log('upstream with fake key:', r.status, j.error);
   eq('upstream failure reported as 502', r.status, 502);
@@ -104,8 +104,8 @@ if (mode === '--mock-web') {
         if (search === 'fail') { res.writeHead(500); return res.end('{}'); }
         res.writeHead(200, { 'content-type': 'application/json' });
         return res.end(JSON.stringify({ results: search === 'empty' ? [] : [
-          { title: 'Explorer snack token question <b>', url: 'https://boardgamegeek.com/thread/1', site_name: 'BoardGameGeek', summary: 'Designer: yes, you may.', rerank_score: 2.1, authority: 3 },
-          { title: '探险家零食讨论', url: 'https://example.cn/a', site_name: null, snippet: '网友说可以。' }] }));
+          { title: 'Futurespan prepared card question <b>', url: 'https://boardgamegeek.com/thread/1', site_name: 'BoardGameGeek', summary: 'Designer: yes, you may.', rerank_score: 2.1, authority: 3 },
+          { title: '研究机构讨论', url: 'https://example.cn/a', site_name: null, snippet: '网友说可以。' }] }));
       }
       const sys = j.messages[0].content, q = j.messages.at(-1).content;
       lastSys = sys;
@@ -113,13 +113,13 @@ if (mode === '--mock-web') {
       if (sys.includes('联网搜索到的网页摘要')) return res.end(sse(`依据网上说法：可以 [1]（摘要条数 ${(sys.match(/^\[\d\] /gm) || []).length}）`));
       if (q.includes('先解释')) {   // the model explains first and asks to search at the end
         res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '资料里没有提到这一点。' } }] })}\n\n`);
-        return setTimeout(() => res.end(sse('\n\n【需联网】Lost Ruins of Arnak Lizard Temple guardian')), 300);
+        return setTimeout(() => res.end(sse('\n\n【需联网】SETI board game Anomalies trigger timing')), 300);
       }
       if (q.includes('网上')) {   // the marker arrives split over two chunks, like a real stream
         res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '【需' } }] })}\n\n`);
-        return setTimeout(() => res.end(sse('联网】Lost Ruins of Arnak Expedition Leaders Explorer snack token')), 200);
+        return setTimeout(() => res.end(sse('联网】SETI board game Space Agencies Futurespan prepared card')), 200);
       }
-      res.end(sse(q.includes('无关') ? '我只解答《阿纳克遗迹》的规则。' : '资料里的回答'));
+      res.end(sse(q.includes('无关') ? '我只解答《星空觅迹》的规则。' : '资料里的回答'));
     });
   }).listen(8842);
   const b = await chromium.launch({ channel: 'chrome' });
@@ -135,23 +135,23 @@ if (mode === '--mock-web') {
       text: [...a.childNodes].filter(n => !n.classList?.contains('cweb') && !n.classList?.contains('csrc')).map(n => n.textContent).join(''),
       src: [...a.querySelectorAll('.csrc a')].map(x => [x.textContent, x.getAttribute('href'), x.target]) }; });
   };
-  eq('covered by the notes: answered directly, no search', [await askOnce('飞机怎么用？', 'ok'), asked],
+  eq('covered by the notes: answered directly, no search', [await askOnce('太阳系怎么转？', 'ok'), asked],
     [{ err: false, label: false, text: '资料里的回答', src: [] }, []]);
-  eq('not covered: searched with the model\'s words, labelled, sources listed', [await askOnce('网上怎么说探险家的零食？', 'ok'), asked],
+  eq('not covered: searched with the model\'s words, labelled, sources listed', [await askOnce('网上怎么说 Futurespan 的准备卡？', 'ok'), asked],
     [{ err: false, label: true, text: '依据网上说法：可以 [1]（摘要条数 2）',
-       src: [['[1] Explorer snack token question <b>BoardGameGeek', 'https://boardgamegeek.com/thread/1', '_blank'], ['[2] 探险家零食讨论example.cn', 'https://example.cn/a', '_blank']] }, ['Lost Ruins of Arnak Expedition Leaders Explorer snack token site:boardgamegeek.com', 'Lost Ruins of Arnak Expedition Leaders Explorer snack token']]);
+       src: [['[1] Futurespan prepared card question <b>BoardGameGeek', 'https://boardgamegeek.com/thread/1', '_blank'], ['[2] 研究机构讨论example.cn', 'https://example.cn/a', '_blank']] }, ['SETI board game Space Agencies Futurespan prepared card site:boardgamegeek.com', 'SETI board game Space Agencies Futurespan prepared card']]);
   await page.screenshot({ path: out + '/chat_web.png' });
-  eq('web prompt asks which expansion a claim belongs to', lastSys.includes('要指出它属于哪个扩展'), true);
+  eq('web prompt asks which expansion a claim belongs to', lastSys.includes('只适用于扩展《群星计画》'), true);
   eq('the search request never reaches the page as text', (await page.$$eval('.cm.a', l => l.map(x => x.textContent).join(''))).includes('需联网'), false);
   eq('nothing found: says so, no label, nothing made up', [await askOnce('网上还有啥？', 'empty'), asked.length],
     [{ err: false, label: false, text: '本站资料里没有这一条，网上也没找到可靠的说法。建议翻一下规则书，或者问问桌上的老玩家。', src: [] }, 2]);
   eq('web answer goes back as plain history (no label, no sources)', bodies.at(-1).messages.slice(-3).map(m => m.content),
-    ['网上怎么说探险家的零食？', '依据网上说法：可以 [1]（摘要条数 2）', '网上还有啥？']);
+    ['网上怎么说 Futurespan 的准备卡？', '依据网上说法：可以 [1]（摘要条数 2）', '网上还有啥？']);
   eq('search API down: says so', (await askOnce('网上第三问？', 'fail')).text, '本站资料里没有这一条，联网查找也失败了，请过一会儿再问，或者翻一下规则书。');
-  eq('off-topic: no search', [(await askOnce('无关的问题', 'ok')).text, asked], ['我只解答《阿纳克遗迹》的规则。', []]);
+  eq('off-topic: no search', [(await askOnce('无关的问题', 'ok')).text, asked], ['我只解答《星空觅迹》的规则。', []]);
   eq('search asked for at the end of an explanation: explanation dropped, searched', [await askOnce('先解释再查', 'ok'), asked],
     [{ err: false, label: true, text: '依据网上说法：可以 [1]（摘要条数 2）',
-       src: [['[1] Explorer snack token question <b>BoardGameGeek', 'https://boardgamegeek.com/thread/1', '_blank'], ['[2] 探险家零食讨论example.cn', 'https://example.cn/a', '_blank']] }, ['Lost Ruins of Arnak Lizard Temple guardian site:boardgamegeek.com', 'Lost Ruins of Arnak Lizard Temple guardian']]);
+       src: [['[1] Futurespan prepared card question <b>BoardGameGeek', 'https://boardgamegeek.com/thread/1', '_blank'], ['[2] 研究机构讨论example.cn', 'https://example.cn/a', '_blank']] }, ['SETI board game Anomalies trigger timing site:boardgamegeek.com', 'SETI board game Anomalies trigger timing']]);
   await b.close(); srv.close();
   console.log(fails ? `${fails} FAILED` : 'ALL PASS'); process.exit(fails ? 1 : 0);
 }
@@ -167,12 +167,12 @@ eq('panel opens', await page.isVisible('.cpanel'), true);
 eq('button hidden while open', await page.isVisible('.cfab'), false);
 
 if (mode === '--live') {
-  await page.fill('.cin textarea', '轮末什么情况要拿恐惧卡？'); await page.press('.cin textarea', 'Enter');
+  await page.fill('.cin textarea', '研究科技时先转太阳系还是先拿科技？'); await page.press('.cin textarea', 'Enter');
   await page.waitForFunction(() => !document.querySelector('.cin button').disabled, null, { timeout: 60000 });
   const a = await lastAnswer();
   console.log('answer:', a);
   eq('real answer, no error', await page.$('.cm.err'), null);
-  eq('answer mentions guardians', /守卫/.test(a), true);
+  eq('answer mentions rotating first', /先转/.test(a), true);
   await page.screenshot({ path: out + '/chat_live.png' });
 } else {
   // not configured: the error shows in the chat and the question can be asked again
@@ -184,14 +184,14 @@ if (mode === '--live') {
   await page.route('**/api/chat', async route => {
     bodies.push(JSON.parse(route.request().postData()));
     const ev = s => `data: ${JSON.stringify({ choices: [{ delta: { content: s } }] })}\n\n`;
-    await route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: ev('从有**守卫**的') + ev('遗址；\n收回考古学家时') + ev('拿恐惧卡。') + 'data: [DONE]\n\n' });
+    await route.fulfill({ status: 200, headers: { 'content-type': 'text/event-stream' }, body: ev('研究科技要**先转**') + ev('太阳系；\n再拿') + ev('科技板块。') + 'data: [DONE]\n\n' });
   });
-  await page.fill('.cin textarea', '轮末什么时候拿恐惧卡？'); await page.press('.cin textarea', 'Enter');
-  await page.waitForFunction(() => [...document.querySelectorAll('.cm.a')].at(-1)?.textContent.includes('拿恐惧卡。'));
-  eq('streamed answer joined', await lastAnswer(), '从有守卫的遗址；收回考古学家时拿恐惧卡。');
-  eq('bold rendered', await page.$$eval('.cm.a', l => l.at(-1).querySelector('b').textContent), '守卫');
+  await page.fill('.cin textarea', '研究科技先转还是先拿？'); await page.press('.cin textarea', 'Enter');
+  await page.waitForFunction(() => [...document.querySelectorAll('.cm.a')].at(-1)?.textContent.includes('科技板块。'));
+  eq('streamed answer joined', await lastAnswer(), '研究科技要先转太阳系；再拿科技板块。');
+  eq('bold rendered', await page.$$eval('.cm.a', l => l.at(-1).querySelector('b').textContent), '先转');
   eq('failed question not sent again', bodies[0].messages.length, 1);
-  await page.fill('.cin textarea', '那蜥蜴神庙呢？'); await page.click('.cin button'); await wait(500);
+  await page.fill('.cin textarea', '那卡牌给的科技呢？'); await page.click('.cin button'); await wait(500);
   eq('history sent with next question', bodies[1].messages.map(m => m.role), ['user', 'assistant', 'user']);
   // a long chat: past 10 questions only the last 10 messages go out (the server rejects over 20)
   for (let i = 0; i < 10; i++) {

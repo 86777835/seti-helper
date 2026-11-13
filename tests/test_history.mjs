@@ -1,4 +1,4 @@
-// Past-games archive + landing layout. Plays a 2-player game (with 探险队长) over the room WebSocket, then checks
+// Past-games archive + landing layout. Plays a 2-player game (with 群星计画) over the room WebSocket, then checks
 // /api/games and the history page, undo/redo/reset behavior, and that create/join stay on screen with many rooms.
 // Usage: node tests/test_history.mjs <base-url> <shots-dir> [--many-rooms | --live]
 // The full run leaves an archived game behind, so run it against a local `wrangler dev`.
@@ -20,7 +20,7 @@ const send = async action => { const v = S?.v ?? -1; ws.send(JSON.stringify({ ac
 await wait(300);
 const name = '测试' + code;
 await send({ t: 'setN', n: 2 });
-await send({ t: 'opt', key: 'el', on: true });
+await send({ t: 'opt', key: 'sa', on: true });
 await send({ t: 'player', i: 0, name });
 await send({ t: 'player', i: 1, name: '对手' });
 await send({ t: 'begin' });
@@ -32,23 +32,25 @@ while (S.stage === 'play' && rounds < 10) {
   await send({ t: 'next', round: S.round }); rounds++;
 }
 eq('5 rounds then over', [S.stage, rounds], ['over', 5]);
-await send({ t: 'score', id: p1, key: 'res', value: [10] });
-await send({ t: 'score', id: p1, key: 'temple', value: [11] });
-await send({ t: 'score', id: p1, key: 'fear', value: '1' });
-await send({ t: 'score', id: p2, key: 'card', value: [3, 4] });
-await send({ t: 'score', id: p2, key: 'guard', value: '1' });
+await send({ t: 'found', k: 'exertians' });
+await send({ t: 'score', id: p1, key: 'track', value: '12' });
+await send({ t: 'score', id: p1, key: 'cards', value: [8] });
+await send({ t: 'score', id: p1, key: 'danger', value: '3' });
+await send({ t: 'score', id: p2, key: 'track', value: '5' });
+await send({ t: 'score', id: p2, key: 'ex', value: [3, 4] });
 let g;
-for (let i = 0; i < 20 && !(g?.players[0].total === 20 && g?.players[1].total === 12); i++) { await wait(300); g = (await games(code))[0]; }   // archive write lands after the broadcast
+for (let i = 0; i < 20 && !(g?.players[0].total === 18 && g?.players[1].total === 12); i++) { await wait(300); g = (await games(code))[0]; }   // archive write lands after the broadcast
 eq('archived by room code', g?.code, code);
-eq('winner first', [g?.players[0].name, g?.players[0].total, g?.players[0].place, g?.players[0].res, g?.players[0].minus], [name, 20, 1, 10, 1]);
-eq('runner-up', [g?.players[1].name, g?.players[1].total, g?.players[1].card, g?.players[1].guard], ['对手', 12, 7, 5]);
-eq('expansion recorded', [g?.n, g?.exp, g?.lead], [2, 'el', false]);
+eq('winner first, danger penalty kept', [g?.players[0].name, g?.players[0].total, g?.players[0].place, g?.players[0].track, g?.players[0].minus], [name, 18, 1, 12, 2]);
+eq('runner-up', [g?.players[1].name, g?.players[1].total, g?.players[1].alien, g?.players[1].track], ['对手', 12, 7, 5]);
+eq('expansion and species recorded', [g?.n, g?.exp, g?.found], [2, 'sa', ['exertians']]);
+eq('search by species', (await games('钻探者')).some(x => x.gid === g.gid), true);
 eq('search by player name', (await games(name)).some(x => x.gid === g.gid), true);
-eq('search by color', (await games({ red: '红', blue: '蓝', yellow: '黄', green: '绿' }[p2])).some(x => x.gid === g.gid), true);
+eq('search by color', (await games({ green: '绿', purple: '紫', orange: '橙', white: '白' }[p2])).some(x => x.gid === g.gid), true);
 eq('search miss', (await games('不存在的玩家xyz')).length, 0);
 const stats = async name => (await fetch(api('/api/stats' + (name ? '?name=' + encodeURIComponent(name) : '')))).json();
-{ const g2 = (await stats(name)).find(x => x.n === 2 && x.exp === 'el');
-  eq('stats: 2-player 探险队长 group has this player', [g2?.games >= 1, g2?.me], [true, { games: 1, best: 20, avg: 20 }]); }
+{ const g2 = (await stats(name)).find(x => x.n === 2 && x.exp === 'sa');
+  eq('stats: 2-player 群星计画 group has this player', [g2?.games >= 1, g2?.me], [true, { games: 1, best: 18, avg: 18 }]); }
 
 const b = await chromium.launch({ channel: 'chrome' });
 const page = await (await b.newContext({ viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })).newPage();
@@ -56,20 +58,20 @@ const errs = []; page.on('pageerror', e => errs.push(e.message));
 await page.goto(base); await page.click('a[href="history"]'); await page.waitForSelector('.game');
 await page.fill('#q', name); await page.click('#search button'); await wait(600);
 eq('history page search shows 1 game', await page.$$eval('.game', x => x.length), 1);
-eq('score references show this player', (await page.textContent('.st')).includes('最高 20'), true);
-eq('summary winner score', await page.textContent('.game .gp .win em'), '20');
-eq('summary names the expansion', (await page.textContent('.game .gh span')).includes('2 人 · 含探险队长'), true);
+eq('score references show this player', (await page.textContent('.st')).includes('最高 18'), true);
+eq('summary winner score', await page.textContent('.game .gp .win em'), '18');
+eq('summary names the expansion', (await page.textContent('.game .gh span')).includes('2 人 · 含群星计画 · 钻探者'), true);
 await page.screenshot({ path: out + '/h_list.png' });
 await page.click('.game summary'); await wait(200);
 eq('details rows', await page.$$eval('.game .gd .row', x => x.length), 2);
 await page.screenshot({ path: out + '/h_open.png' });
 
 await send({ t: 'undo' }); await wait(400);
-eq('undoing the end of round V removes the record', (await games(code)).length, 0);
+eq('undoing the end of round 5 removes the record', (await games(code)).length, 0);
 if (live) { await send({ t: 'reset' }); ws.close();   // back to setup so the room leaves the public list
   await b.close(); eq('no page errors', errs, []); console.log(fails ? `${fails} FAILED` : 'ALL PASS'); process.exit(fails ? 1 : 0); }
 await send({ t: 'next', round: S.round }); await wait(400);
-eq('ending again restores record with scores', (await games(code))[0]?.players[0].total, 20);
+eq('ending again restores record with scores', (await games(code))[0]?.players[0].total, 18);
 await send({ t: 'reset' }); await wait(400);
 eq('reset keeps record', (await games(code)).length, 1);
 ws.close();

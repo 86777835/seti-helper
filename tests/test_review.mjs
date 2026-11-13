@@ -20,7 +20,7 @@ while (S.stage === 'play') {
   await send({ t: 'pass', round: S.round, id: p1 }); await send({ t: 'pass', round: S.round, id: p2 });
   await send({ t: 'next', round: S.round });
 }
-await send({ t: 'score', id: p1, key: 'card', value: [20] }); await send({ t: 'score', id: p2, key: 'card', value: [15] });
+await send({ t: 'score', id: p1, key: 'track', value: '20' }); await send({ t: 'score', id: p2, key: 'track', value: '15' });
 
 const b = await chromium.launch({ channel: 'chrome' });
 const page = await (await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })).newPage();
@@ -31,7 +31,7 @@ await page.route('https://boardgame.leisurecat.cloud/api/reviews', async r => {
   await r.fulfill({ json: { ok: true, avg: 4, count: 1 }, headers: { 'access-control-allow-origin': '*' } });
 });
 // this phone picked 小李 on the score tab: the card starts with 小李
-await page.goto(api(`/?r=${code}`)); await page.evaluate(([c, id]) => localStorage.setItem('arnak-me-' + c, id), [code, p2]);
+await page.goto(api(`/?r=${code}`)); await page.evaluate(([c, id]) => localStorage.setItem('seti-me-' + c, id), [code, p2]);
 await page.reload(); await page.waitForSelector('[data-act="tab"][data-tab="mvp"]');
 await page.click('[data-act="tab"][data-tab="mvp"]'); await page.waitForSelector('.rv');
 eq('"I am" filled from the score tab', await page.getAttribute('[data-act="rv-who"].on', 'data-id'), p2);
@@ -41,19 +41,19 @@ await page.click(`[data-act="rv-who"][data-id="${p1}"]`);
 await page.click('[data-act="rv-star"][data-n="4"]');
 eq('4 stars lit', await page.$$eval('.rv-st button.on', l => l.length), 4);
 eq('star label', await page.textContent('.rv-st span'), '好玩');
-await page.fill('[data-rv]', '轮末清单很省心');
+await page.fill('[data-rv]', '跳过提示很省心');
 await page.click('[data-act="rv-star"][data-n="5"]');   // a re-render must keep the typed text
-eq('text kept across re-render', await page.inputValue('[data-rv]'), '轮末清单很省心');
+eq('text kept across re-render', await page.inputValue('[data-rv]'), '跳过提示很省心');
 await page.screenshot({ path: out + '/review_form.png' });
 await page.click('[data-act="rv-send"]'); await page.waitForSelector('.rv-done');
-eq('posted to the hub', [posted.length, posted[0]?.game, posted[0]?.stars, posted[0]?.name, posted[0]?.text, posted[0]?.room], [1, 'arnak', 5, '老张', '轮末清单很省心', code]);
+eq('posted to the hub', [posted.length, posted[0]?.game, posted[0]?.stars, posted[0]?.name, posted[0]?.text, posted[0]?.room], [1, 'seti', 5, '老张', '跳过提示很省心', code]);
 eq('thanks shown', (await page.textContent('.rv p')).includes('老张'), true);
 eq('link to the hub', await page.getAttribute('.rv a.btn', 'href'), 'https://boardgame.leisurecat.cloud');
 await page.reload(); await page.waitForSelector('[data-act="tab"]');
 await page.click('[data-act="tab"][data-tab="mvp"]'); await page.waitForSelector('.rv');
 eq('sent state remembered after reload', !!(await page.$('.rv-done')), true);
 await page.click('[data-act="rv-edit"]');
-eq('edit restores the form', [await page.$$eval('.rv-st button.on', l => l.length), await page.inputValue('[data-rv]')], [5, '轮末清单很省心']);
+eq('edit restores the form', [await page.$$eval('.rv-st button.on', l => l.length), await page.inputValue('[data-rv]')], [5, '跳过提示很省心']);
 // a hub error is shown in the card
 await page.unroute('https://boardgame.leisurecat.cloud/api/reviews');
 await page.route('https://boardgame.leisurecat.cloud/api/reviews', r => r.fulfill({ status: 429, json: { error: '提交太频繁，请稍后再试' }, headers: { 'access-control-allow-origin': '*' } }));

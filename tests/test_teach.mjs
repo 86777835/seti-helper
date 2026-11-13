@@ -1,4 +1,4 @@
-// 5-minute teach page: entry on the landing page, every term opens its note, the 「问」 buttons ask the rules
+// 6-minute teach page: entry on the landing page, every term opens its note, the 「问」 buttons ask the rules
 // assistant that exact question, the icon guide, phone width. /api/chat is mocked, so this never asks a real model.
 // Usage: node tests/test_teach.mjs <base-url> <shots-dir>   (safe against the live site too: it writes nothing)
 import { chromium } from 'playwright-core';
@@ -16,30 +16,30 @@ await page.route('**/api/chat', async r => {
 });
 
 await page.goto(base); await page.waitForSelector('.teachgo');
-eq('landing shows the teach entry', (await page.textContent('.teachgo b')), '第一次玩？5 分钟讲规则');
+eq('landing shows the teach entry', (await page.textContent('.teachgo b')), '第一次玩？6 分钟讲规则');
 await page.click('.teachgo'); await page.waitForSelector('.tpart');
 eq('teach page opened', new URL(page.url()).pathname, '/teach');
 eq('eight parts plus 注意事项', await page.$$eval('.tpart h2', l => l.map(h => h.querySelector('span').textContent.replace(/^\S+?(?=[一-龥])/, ''))),
-  ['怎么赢', '牌库和资源', '一轮怎么走', '派考古学家', '守卫和神像', '买卡', '研究', '结束和计分', '注意事项']);
-// two modes: base game by default, or with the expansions' expedition leaders
+  ['怎么赢', '一轮怎么走', '版图和资源', '探测器：发射、绕行、着陆', '望远镜：扫描和数据', '打牌、科技和公转', '外星生物', '里程碑和终局', '注意事项']);
+// two modes: base game by default, or with the expansion 《群星计画》
 const modeOn = () => page.$eval('.tmode [aria-pressed="true"]', b => b.textContent);
 const script = () => page.$$eval('.tline', l => l.map(p => p.textContent).join(''));
 const noteCount = () => page.$$eval('#later details', l => l.length);
 eq('base game by default', await modeOn(), '只玩基础');
-const BASE_WORDS = ['玩家版图', '考古学家', '资金卡', '探索卡', '恐惧卡', '移动值', '出牌区', '牌库构筑', '金币', '指南针', '石板', '箭头', '宝石', '起始玩家标记', '快速行动', '跳过', '月之权杖', '遗址', '靴子', '吉普车', '船', '飞机', '发现新遗址', '封锁标记', '神像', '神像槽', '守卫', '奖励', '物品卡', '神器卡', '移除', '研究轨', '放大镜', '笔记本', '研究奖励板块', '助手', '失落的神庙', '神庙板块'];
-const X_WORDS = ['探险队长', '海军上校', '神秘人', '记者', '机械师', '帐篷标记', '蓝色神像槽', '新研究轨'];
+const BASE_WORDS = ['太阳系版图', '圆盘', '扇区', '行星版图', '科技版图', '玩家版图', '信用点', '能量', '推广', '数据', '计算机', '卡牌', '增加收入', '条件任务', '触发任务', '终局计分牌', '起始收入牌', '跳过本轮', '一轮结束牌', '发射', '移动', '小行星', '绕行', '人造卫星', '着陆', '着陆器', '扫描', '信号', '赢得扇区', '分析数据', '打出卡牌', '研究科技', '科技板块', '转太阳系', '公转计数标记', '生命迹象', '发现位置', '外星生物说明', '外星生物卡牌', '金色里程碑', '金色计分板块', '中立里程碑', '免费行动', '共享胜利'];
+const X_WORDS = ['群星计画', '研究机构', '快速起始牌', '信号标记', '第 2–5 轮'];
 const read = await script(), baseNotes = await noteCount();
 console.log(`  base game: ${read.length} characters, ${baseNotes} notes`);
-eq('base script about five minutes (under 1400 characters)', read.length < 1400, true);
+eq('base script about six minutes (under 1700 characters)', read.length < 1700, true);
 for (const w of BASE_WORDS) if (!read.includes(w)) { fails++; console.log('FAIL base script mentions', w); }
-eq('base script has nothing from the expansions', ['队长', '帐篷', '蓝色神像槽', '新研究轨'].filter(w => read.includes(w)), []);
-eq('base: 17 notes, none tagged, no expansion icons', [baseNotes, await page.$$eval('#later .tnw', l => l.length), await page.$$eval('.tic[data-t="leaderboard"]', l => l.length)], [17, 0, 0]);
+eq('base script has nothing from the expansion', ['群星计画', '研究机构', '快速起始牌', '信号标记'].filter(w => read.includes(w)), []);
+eq('base: 18 notes, none tagged, no expansion icons', [baseNotes, await page.$$eval('#later .tnw', l => l.length), await page.$$eval('.tic[data-t="org"]', l => l.length)], [18, 0, 0]);
 await page.click('.tmode [data-mode="x"]');
 const xRead = await script(), xNotes = await noteCount();
 console.log(`  with expansions: ${xRead.length} characters, ${xNotes} notes`);
-eq('expansions script under 1700 characters', xRead.length < 1700, true);
-for (const w of [...BASE_WORDS.filter(w => !['资金卡', '探索卡'].includes(w)), ...X_WORDS]) if (!xRead.includes(w))   // leaders bring their own starting cards { fails++; console.log('FAIL expansions script mentions', w); }
-eq('expansions notes: base ones plus 7 tagged', [xNotes, await page.$$eval('#later summary .tnw', l => l.length)], [24, 7]);
+eq('expansion script under 2000 characters', xRead.length < 2000, true);
+for (const w of [...BASE_WORDS.filter(w => w !== '起始收入牌'), ...X_WORDS]) if (!xRead.includes(w)) { fails++; console.log('FAIL expansion script mentions', w); }   // organizations replace the starting income card
+eq('expansion notes: base ones plus 3 tagged', [xNotes, await page.$$eval('#later summary .tnw', l => l.length)], [21, 3]);
 await page.screenshot({ path: out + '/teach_top.png' });
 
 // every term in the script and every icon in the guide opens a note with a name, an icon and both texts
@@ -100,7 +100,7 @@ eq('no sideways scrolling at 375 px', await page.evaluate(() => document.documen
 eq('「去建房间」 goes to the landing page', await page.getAttribute('.tgo', 'href'), '/');
 // the choice is remembered in this browser (the page is in the expansions mode now)
 await page.reload(); await page.waitForSelector('.tpart');
-eq('expansions mode remembered after reload', [await modeOn(), await noteCount()], ['带扩展队长', 24]);
+eq('expansion mode remembered after reload', [await modeOn(), await noteCount()], ['带群星计画', 21]);
 eq('no page errors', errs, []);
 await b.close();
 console.log(fails ? `${fails} FAILED` : 'ALL PASS'); process.exit(fails ? 1 : 0);

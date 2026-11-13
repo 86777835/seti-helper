@@ -18,7 +18,7 @@ const FIELD = {
 };
 const RFIELD = {
   track: { n: '分数条上的分数', hint: '对手的分数指示物停在几分（含 100 分标记）。对手不算金色计分板块。' },
-  obj: { n: '没完成的目标', hint: `目标列和目标牌堆里还没完成的目标块数，每块对手得 ${RIVAL_OBJ_PTS} 分（1 星难度没有目标）。`, count: true, mult: RIVAL_OBJ_PTS },
+  obj: { n: '没完成的目标', hint: `目标列和目标牌堆里还没完成的目标块数，每块对手得 ${RIVAL_OBJ_PTS} 分（1 星难度没有目标；《群星计画》的长期目标不算）。`, count: true, mult: RIVAL_OBJ_PTS },
   ex: { n: '钻探者牌', hint: '对手打出的钻探者牌都算达成，按牌上分数逐张输入。', list: true },
   danger: { n: '危险度', hint: '对手钻探者牌上的危险度，加上钻探者版图上对手的标记。和你比较，高的扣十分之一。' },
   glyphN: { n: '符文标记', hint: `对手持有的符文标记个数，每个 ${RIVAL_GLYPH_PTS} 分，不分种类。`, count: true, mult: RIVAL_GLYPH_PTS }

@@ -127,7 +127,7 @@ table.sc{width:100%;margin-top:8px;border-collapse:separate;border-spacing:0 6px
 .legend b{color:var(--ink)}
 
 /* sheets */
-.mask{position:fixed;inset:0;background:rgba(6,16,10,.55);z-index:20}
+.mask{position:fixed;inset:0;background:rgba(5,11,24,.55);z-index:20}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-width:520px;margin:0 auto;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);
   background:var(--parch);border-top:3px solid var(--brass);border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.4)}
 .sheet h3{font:900 16px var(--serif);color:var(--red);letter-spacing:1px}
@@ -179,7 +179,7 @@ table.sc{width:100%;margin-top:8px;border-collapse:separate;border-spacing:0 6px
 .sv-top a,.sv-top button{padding:5px 12px;border:1px solid rgba(255,255,255,.4);border-radius:5px;background:none;color:#fff;font:600 13px var(--sans);text-decoration:none}
 .tb{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--ink2)}
 footer{margin-top:18px;text-align:center;font-size:10.5px;line-height:1.6;color:var(--ink2);opacity:.8}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);z-index:30;padding:8px 16px;border-radius:20px;background:rgba(9,24,16,.9);color:#fff;font-size:13px}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);z-index:30;padding:8px 16px;border-radius:20px;background:rgba(5,11,24,.9);color:#fff;font-size:13px}
 
 /* short phones (e.g. iPhone SE): tighten the in-game screen so the settle button stays on screen */
 @media (max-height: 700px){
@@ -300,7 +300,7 @@ body.has-chat{padding-bottom:72px}
 .csug button{display:flex;align-items:center;gap:9px;padding:9px 10px;border:1px solid rgba(232,135,58,.55);border-radius:9px;background:#f7faff;text-align:left;font:600 13.5px var(--sans);color:var(--ink);box-shadow:0 1px 0 rgba(154,79,18,.22)}
 .csug button:before{content:"问";flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;background:var(--navy);color:#fff;font:700 11px var(--sans)}
 .csug button:after{content:"›";margin-left:auto;font:600 18px/1 var(--sans);color:var(--brass)}
-.csug button:active{background:#f3e7cc}
+.csug button:active{background:#e7edf6}
 .cr{display:flex;align-items:flex-end;gap:7px}
 .cr.u{justify-content:flex-end}
 .cm{max-width:82%;padding:9px 12px;border-radius:12px;font:14px/1.65 var(--sans);word-break:break-word}
@@ -421,7 +421,7 @@ table.st{width:100%;border-collapse:collapse;background:rgba(255,255,255,.6);bor
 .phb .steps{margin-left:-28px}
 .ph.cur .phh small{color:var(--red)}
 .slot.out .por{opacity:.45;filter:grayscale(.6)}
-.slot.out .m{background:#5c6b62;color:#e9efe9}
+.slot.out .m{background:#5c6b62;color:#e8eef7}
 .passes button span{white-space:nowrap}
 .tbh.df{margin-top:10px;padding:6px 0 2px;border-top:1px dashed rgba(60,72,95,.3)}
 .tbh.df b{font:900 14px var(--serif);color:var(--red);letter-spacing:1px}
@@ -477,7 +477,7 @@ input.plot{flex:1;min-width:0;height:44px;border-radius:6px;border:1.5px solid v
 /* 3-minute teach page (teach.html): a script to read aloud, terms that open a note, one-tap questions to the rules assistant */
 .teach .tlead{margin:14px 2px 8px;font:500 14px/1.7 var(--sans);color:var(--ink2)}
 .teach .tlead b{color:var(--navy);text-decoration:underline dotted;text-underline-offset:3px}
-.tnav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;margin:0 -12px;padding:8px 12px;background:rgba(240,231,207,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);scrollbar-width:none}
+.tnav{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;margin:0 -12px;padding:8px 12px;background:rgba(238,242,248,.94);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);scrollbar-width:none}
 .tnav::-webkit-scrollbar{display:none}
 .tnav a{flex:none;display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:14px;border:1px solid rgba(31,79,138,.35);background:rgba(31,79,138,.06);color:var(--navy);font:600 13px var(--sans);text-decoration:none}
 .tnav a i{font:600 12px var(--num);font-style:normal;color:var(--brass)}
@@ -522,7 +522,7 @@ input.plot{flex:1;min-width:0;height:44px;border-radius:6px;border:1.5px solid v
 .tsbox p{margin-top:10px;font:500 15px/1.7 var(--sans);color:var(--ink)}
 .tsbox p em{display:block;font:600 12px var(--sans);font-style:normal;color:var(--red);letter-spacing:1px}
 /* landing: entry to the teach page */
-.teachgo{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;text-decoration:none;color:var(--ink);border-color:rgba(196,80,28,.45);background:linear-gradient(180deg,#fff8e6,#f6e8c6)}
+.teachgo{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;text-decoration:none;color:var(--ink);border-color:rgba(196,80,28,.45);background:linear-gradient(180deg,#fff7ef,#fde6d2)}
 .teachgo .tg-i{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--red);color:#fff3d6;font:900 19px var(--serif);box-shadow:inset 0 0 0 2px var(--brass2)}
 .teachgo b{display:block;font:900 16px var(--serif);letter-spacing:1px;color:var(--red)}
 .teachgo span{flex:1;font:500 12.5px/1.5 var(--sans);color:var(--ink2)}
